@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { btn, card } from '../components/Layout'
+import ManagePlayers from '../components/ManagePlayers'
 
 export default function GamePage() {
   const { id = '' } = useParams()
@@ -80,6 +81,7 @@ export default function GamePage() {
           )
         })}
       </section>
+      {contestants.data && picks.data && <ManagePlayers game={g} contestants={contestants.data} picks={picks.data} />}
       <details className={card}>
         <summary className="min-h-[44px] cursor-pointer font-semibold">Record an elimination</summary>
         <p className="text-xs text-stone-500">Site admins and group owners only. Affects every game this season.</p>

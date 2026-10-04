@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { supabase } from '../lib/supabase'
@@ -12,7 +12,10 @@ export default function Contestants() {
   const qc = useQueryClient()
   const game = useQuery({ queryKey: ['game', gameId], queryFn: () => api.game(gameId!), enabled: !!gameId })
   const seasons = useQuery({ queryKey: ['seasons'], queryFn: api.seasons })
-  const seasonId = game.data?.season_id ?? seasons.data?.[0]?.id
+  const [params, setParams] = useSearchParams()
+  const defaultSeason = seasons.data?.find(s => s.status === 'airing') ?? seasons.data?.[0]
+  const chosen = seasons.data?.find(s => String(s.number) === params.get('season'))
+  const seasonId = game.data?.season_id ?? (chosen ?? defaultSeason)?.id
   const list = useQuery({ queryKey: ['contestants', seasonId], queryFn: () => api.contestants(seasonId!), enabled: !!seasonId })
   const picks = useQuery({ queryKey: ['picks', gameId], queryFn: () => api.picks(gameId!), enabled: !!gameId })
   const names = useQuery({
@@ -45,6 +48,12 @@ export default function Contestants() {
     <main className="flex flex-col gap-3">
       <div className="sticky top-[53px] z-10 -mx-4 flex flex-col gap-2 bg-stone-50 px-4 py-2">
         <h1 className="text-2xl font-bold">{gameId ? 'Pick your castaway' : 'Castaways'}</h1>
+        {!gameId && seasons.data && seasons.data.length > 0 && (
+          <select aria-label="Season" value={seasonId ?? ''} onChange={e => setParams({ season: String(seasons.data!.find(s => s.id === Number(e.target.value))!.number) }, { replace: true })}
+            className="min-h-[44px] rounded-lg border bg-white px-3">
+            {seasons.data.map(s => <option key={s.id} value={s.id}>Season {s.number}{s.title && s.title !== `Survivor ${s.number}` ? `: ${s.title}` : ''}</option>)}
+          </select>
+        )}
         <input type="search" placeholder="Search" value={q} onChange={e => setQ(e.target.value)} className="min-h-[44px] rounded-lg border px-3" />
         {gameId && <label className="flex min-h-[44px] items-center gap-2"><input type="checkbox" checked={availOnly} onChange={e => setAvailOnly(e.target.checked)} />Available only</label>}
       </div>
@@ -58,8 +67,8 @@ export default function Contestants() {
           return (
             <li key={c.id} className={`overflow-hidden rounded-xl border bg-white ${disabled ? 'opacity-60' : ''}`}>
               <Link to={`/contestants/${c.id}`}>
-                {c.photo_url ? <img src={c.photo_url} alt={c.name} loading="lazy" className="aspect-square w-full object-cover" />
-                  : <div className="aspect-square w-full bg-stone-200" />}
+                {c.photo_url ? <img src={c.photo_url} alt={c.name} loading="lazy" referrerPolicy="no-referrer" className="aspect-[2/3] w-full object-cover object-top" />
+                  : <div className="aspect-[2/3] w-full bg-stone-200" />}
                 <div className="p-2"><div className="font-semibold">{c.name}</div>
                   <div className="text-xs text-stone-500">{c.occupation}</div></div>
               </Link>

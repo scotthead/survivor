@@ -10,8 +10,8 @@ export const api = {
   groups: async () => check(await supabase.from('groups').select('*').order('created_at')) as Group[],
   group: async (id: string) => check(await supabase.from('groups').select('*').eq('id', id).single()) as Group,
   members: async (id: string) =>
-    check(await supabase.from('group_members').select('role, profiles(id, display_name)').eq('group_id', id)) as unknown as
-      { role: string; profiles: Pick2<Profile, 'id' | 'display_name'> }[],
+    check(await supabase.from('group_members').select('role, profiles(id, display_name, is_guest)').eq('group_id', id)) as unknown as
+      { role: string; profiles: Pick2<Profile, 'id' | 'display_name' | 'is_guest'> }[],
   gamesForGroup: async (id: string) => check(await supabase.from('games').select('*').eq('group_id', id)) as Game[],
   allGames: async () => check(await supabase.from('games').select('*, groups(name), seasons(number)').order('created_at', { ascending: false })) as unknown as
     (Game & { groups: { name: string }; seasons: { number: number } })[],

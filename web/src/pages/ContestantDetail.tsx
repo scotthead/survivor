@@ -9,7 +9,7 @@ export default function ContestantDetail() {
   if (!c) return <p>Not found.</p>
   return (
     <main className="flex flex-col gap-3">
-      {c.photo_url && <img src={c.photo_url} alt={c.name} className="w-full rounded-xl" />}
+      {c.photo_url && <img src={c.photo_url} alt={c.name} referrerPolicy="no-referrer" className="w-full rounded-xl" />}
       <h1 className="text-2xl font-bold">{c.name} {c.status !== 'active' && <span className="text-sm text-red-600">({c.status}{c.eliminated_episode ? `, ep ${c.eliminated_episode}` : ''})</span>}</h1>
       <dl className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
         {c.age && <><dt className="text-stone-500">Age</dt><dd>{c.age}</dd></>}
